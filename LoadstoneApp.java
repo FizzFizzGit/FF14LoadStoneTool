@@ -1,3 +1,4 @@
+import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Toolkit;
@@ -7,19 +8,26 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 
 public class LoadstoneApp extends JFrame {
+	private JFrame chdFrame = null;
 	private JPanel contentPane;
 	private String urlStr;
 	private Toolkit kit = Toolkit.getDefaultToolkit();;
@@ -53,7 +61,6 @@ public class LoadstoneApp extends JFrame {
 		JButton BtnClear = new JButton("全消去");
 		JList list = new JList();
 		DefaultListModel model = new DefaultListModel();
-
 
 		setFont(new Font("游ゴシック", Font.PLAIN, 12));
 		setTitle("FF14URL変換器");
@@ -92,6 +99,43 @@ public class LoadstoneApp extends JFrame {
 		Timer timer = new Timer();
 		timer.schedule(task,1000,1000);
 
+		list.addMouseListener(new MouseListener() {
+			public void mouseClicked(MouseEvent e) {
+				int index = list.getSelectedIndex();
+				String str = (String)model.get(index);
+				if(chdFrame != null) {
+					chdFrame.dispose();
+				}
+				if(!str.equals("")) {
+					chdFrame = WebGraphView(str);
+				}
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				// TODO 自動生成されたメソッド・スタブ
+
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// TODO 自動生成されたメソッド・スタブ
+
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// TODO 自動生成されたメソッド・スタブ
+
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				// TODO 自動生成されたメソッド・スタブ
+
+			}
+		});
+
 		BtnCopyClipBoard.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int index = list.getSelectedIndex();
@@ -116,7 +160,63 @@ public class LoadstoneApp extends JFrame {
 		});
 	}
 
-	public void ClipBoardListener(DefaultListModel model) {
+	private JFrame WebGraphView(String urlStr) {
+		URLConnection Con = null;
+		JFrame gframe = null;
+		JPanel pane = null;
+		JLabel label = null;
+		URL url = null;
+		String cType = "";
+		Object wObj = null;
+
+		try {
+			url = new URL(urlStr);
+		}catch(MalformedURLException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		try {
+			Con = url.openConnection();
+		}catch(IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		if(cType.equals("image/jpg") || cType.equals("image/png")) {
+			cType = Con.getContentType();
+			try {
+			wObj = Con.getContent();
+			}catch(IOException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}else {
+			return null;
+		}
+
+		if(wObj != null) {
+//			ImageIcon icon = new ImageIcon(url);
+//			label = new JLabel(icon);
+			label = new JLabel();
+		}else {
+			label = new JLabel("Not image");
+		}
+
+		gframe = new JFrame();
+		pane = new JPanel();
+		pane.add(label);
+		gframe.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		gframe.getContentPane().add(pane,BorderLayout.CENTER);
+		gframe.setBounds(this.getBounds().x + 395, this.getBounds().y, 200, 280);
+		gframe.setFont(new Font("游ゴシック", Font.PLAIN, 12));
+		gframe.setTitle("Preview");
+		gframe.setResizable(false);
+		gframe.setVisible(true);
+		return gframe;
+	}
+
+	private void ClipBoardListener(DefaultListModel model) {
 		urlStr = GetClipBoardStr();
 		if(urlStr == null) {return;}
 		if(urlStr.contains(KEY_WORD)) {
@@ -125,7 +225,7 @@ public class LoadstoneApp extends JFrame {
 		}
 	}
 
-	public void AddList(String urlStr,DefaultListModel model) {
+	private void AddList(String urlStr,DefaultListModel model) {
 		if(!ExistsElement(urlStr,model)) {model.addElement(urlStr);}
 	};
 
@@ -142,12 +242,12 @@ public class LoadstoneApp extends JFrame {
 		return false;
 	}
 
-	public String ConvertStr(String urlStr) {
+	private String ConvertStr(String urlStr) {
 		urlStr = urlStr.replace(KEY_WORD,REPLACE_WORD);
 		return urlStr;
 	}
 
-	public String GetClipBoardStr() {
+	private String GetClipBoardStr() {
 		try {
 			return (String) clipboard.getData(DataFlavor.stringFlavor);
 		} catch (UnsupportedFlavorException e) {
@@ -157,7 +257,7 @@ public class LoadstoneApp extends JFrame {
 		}
 	}
 
-	public void setClipboardString(String str) {
+	private void setClipboardString(String str) {
 		StringSelection ss = new StringSelection(str);
 		clipboard.setContents(ss, ss);
 	}
