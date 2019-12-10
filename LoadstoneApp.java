@@ -18,6 +18,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -101,8 +102,13 @@ public class LoadstoneApp extends JFrame {
 
 		list.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {
+				String str = null;
 				int index = list.getSelectedIndex();
-				String str = (String)model.get(index);
+				if(index != -1) {
+					str = (String)model.get(index);
+				}else {
+					return;
+				}
 				if(chdFrame != null) {
 					chdFrame.dispose();
 				}
@@ -139,7 +145,7 @@ public class LoadstoneApp extends JFrame {
 		BtnCopyClipBoard.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int index = list.getSelectedIndex();
-				urlStr = (String)model.getElementAt(index);
+				if(index != -1){urlStr = (String)model.getElementAt(index);}
 				if(!urlStr.equals("")) {
 					setClipboardString(urlStr);
 				}
@@ -149,7 +155,7 @@ public class LoadstoneApp extends JFrame {
 		BtnDelete.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int index = list.getSelectedIndex();
-				model.remove(index);
+				if(index != -1){model.remove(index);}
 			}
 		});
 
@@ -167,7 +173,7 @@ public class LoadstoneApp extends JFrame {
 		JLabel label = null;
 		URL url = null;
 		String cType = "";
-		Object wObj = null;
+		byte[] wObj = null;
 
 		try {
 			url = new URL(urlStr);
@@ -178,15 +184,20 @@ public class LoadstoneApp extends JFrame {
 
 		try {
 			Con = url.openConnection();
+			Con.connect();
+			System.out.println("open");
 		}catch(IOException e) {
 			e.printStackTrace();
 			return null;
 		}
 
-		if(cType.equals("image/jpg") || cType.equals("image/png")) {
-			cType = Con.getContentType();
+		cType = Con.getContentType();
+
+		if(cType == null){System.out.println(cType);return null;}
+
+		if(cType.equals("image/jpeg") || cType.equals("image/png")) {
 			try {
-			wObj = Con.getContent();
+			wObj = (byte[])Con.getContent();
 			}catch(IOException e) {
 				e.printStackTrace();
 				return null;
@@ -196,9 +207,8 @@ public class LoadstoneApp extends JFrame {
 		}
 
 		if(wObj != null) {
-//			ImageIcon icon = new ImageIcon(url);
-//			label = new JLabel(icon);
-			label = new JLabel();
+			ImageIcon icon = new ImageIcon(wObj);
+			label = new JLabel(icon);
 		}else {
 			label = new JLabel("Not image");
 		}
@@ -229,7 +239,7 @@ public class LoadstoneApp extends JFrame {
 		if(!ExistsElement(urlStr,model)) {model.addElement(urlStr);}
 	};
 
-	public boolean ExistsElement(String urlStr,DefaultListModel model) {
+	private boolean ExistsElement(String urlStr,DefaultListModel model) {
 		int iLoop = 0;
 		int iCnt = model.getSize();
 		String chkStr;
