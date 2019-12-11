@@ -12,6 +12,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Timer;
@@ -186,6 +187,9 @@ public class LoadstoneApp extends JFrame {
 			Con = url.openConnection();
 			Con.connect();
 			System.out.println("open");
+		}catch(SocketTimeoutException e) {
+			e.printStackTrace();
+			return null;
 		}catch(IOException e) {
 			e.printStackTrace();
 			return null;
@@ -193,11 +197,11 @@ public class LoadstoneApp extends JFrame {
 
 		cType = Con.getContentType();
 
-		if(cType == null){System.out.println(cType);return null;}
+		if(cType == null){return null;}
 
 		if(cType.equals("image/jpeg") || cType.equals("image/png")) {
 			try {
-			wObj = (byte[])Con.getContent();
+				wObj = (byte[])Con.getContent();
 			}catch(IOException e) {
 				e.printStackTrace();
 				return null;
