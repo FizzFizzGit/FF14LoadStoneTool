@@ -19,7 +19,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -174,7 +173,7 @@ public class LoadstoneApp extends JFrame {
 		JLabel label = null;
 		URL url = null;
 		String cType = "";
-		byte[] wObj = null;
+		Object wObj = null;
 
 		try {
 			url = new URL(urlStr);
@@ -186,7 +185,8 @@ public class LoadstoneApp extends JFrame {
 		try {
 			Con = url.openConnection();
 			Con.connect();
-			System.out.println("open");
+			cType = Con.getContentType();
+			System.out.println(cType);//ここがnull
 		}catch(SocketTimeoutException e) {
 			e.printStackTrace();
 			return null;
@@ -195,13 +195,11 @@ public class LoadstoneApp extends JFrame {
 			return null;
 		}
 
-		cType = Con.getContentType();
-
 		if(cType == null){return null;}
 
 		if(cType.equals("image/jpeg") || cType.equals("image/png")) {
 			try {
-				wObj = (byte[])Con.getContent();
+				wObj = Con.getContent();
 			}catch(IOException e) {
 				e.printStackTrace();
 				return null;
@@ -211,8 +209,8 @@ public class LoadstoneApp extends JFrame {
 		}
 
 		if(wObj != null) {
-			ImageIcon icon = new ImageIcon(wObj);
-			label = new JLabel(icon);
+			//ImageIcon icon = new ImageIcon((byte[])wObj);
+			//label = new JLabel(icon);
 		}else {
 			label = new JLabel("Not image");
 		}
